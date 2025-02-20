@@ -19,7 +19,7 @@
       padding: 30px;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-      max-width: 800px;
+      max-width: 500px;
       width: 100%;
     }
 
@@ -83,27 +83,6 @@
       font-size: 14px;
       color: green;
     }
-
-    .uploaded-documents {
-      margin-top: 30px;
-      text-align: left;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    th, td {
-      padding: 12px;
-      border: 1px solid #ddd;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f2f2f2;
-    }
   </style>
 </head>
 
@@ -116,87 +95,51 @@
     </div>
     <button id="uploadButton">Upload Document</button>
     <p class="status-message" id="statusMessage"></p>
-
-    <!-- Table to display uploaded documents -->
-    <div class="uploaded-documents">
-      <h3>Uploaded Documents</h3>
-      <table id="documentTable">
-        <thead>
-          <tr>
-            <th>File Name</th>
-            <th>Upload Date</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Rows will be dynamically added here -->
-        </tbody>
-      </table>
-    </div>
   </div>
 
   <script>
     const BEARER_TOKEN = "dop_v1_2e3a27b5d07203800d4c9738d955903e6ee7036e21638d49029418cfc8bae8dc";
     const KNOWLEDGE_BASE_ID = "b0440044-e802-11ef-bf8f-4e013e2ddde4";
 
-    // Function to add a row to the table
-    function addDocumentToTable(fileName, uploadDate, status) {
-      const tableBody = document.querySelector("#documentTable tbody");
-      const newRow = document.createElement("tr");
-
-      newRow.innerHTML = `
-        <td>${fileName}</td>
-        <td>${uploadDate}</td>
-        <td>${status}</td>
-      `;
-
-      tableBody.appendChild(newRow);
-    }
+    document.getElementById('documentUpload').addEventListener('change', function() {
+      const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
+      document.getElementById('fileName').textContent = fileName;
+    });
 
     document.getElementById('uploadButton').addEventListener('click', function() {
-  const fileInput = document.getElementById('documentUpload');
-  const file = fileInput.files[0];
+      const fileInput = document.getElementById('documentUpload');
+      const file = fileInput.files[0];
 
-  if (!file) {
-    alert('Please select a document to upload.');
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append('file', file);
-
-  fetch(`https://api.digitalocean.com/v2/gen-ai/knowledge_bases/${KNOWLEDGE_BASE_ID}/data_sources`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${BEARER_TOKEN}`
-      },
-      body: formData
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!file) {
+        alert('Please select a document to upload.');
+        return;
       }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Upload Response:', data);
-      if (data.id) {
-        document.getElementById('statusMessage').textContent = '✅ Document uploaded successfully!';
 
-        const uploadDate = new Date().toLocaleString();
-        addDocumentToTable(file.name, uploadDate, 'Uploaded');
-      } else {
-        throw new Error(data.message || "Unknown error occurred.");
-      }
-    })
-    .catch(error => {
-      console.error('Error uploading document:', error);
-      document.getElementById('statusMessage').textContent = `❌ Error: ${error.message}`;
+      const formData = new FormData();
+      formData.append('file', file);
 
-      const uploadDate = new Date().toLocaleString();
-      addDocumentToTable(file.name, uploadDate, 'Failed');
+      fetch(`https://api.digitalocean.com/v2/gen-ai/knowledge_bases/${KNOWLEDGE_BASE_ID}/data_sources`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${BEARER_TOKEN}`
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Upload Response:', data); 
+          if (data.id) {
+            document.getElementById('statusMessage').textContent = '✅ Document uploaded successfully!';
+          } else {
+            throw new Error(data.message || "Unknown error occurred.");
+          }
+        })
+        .catch(error => {
+          console.error('Error uploading document:', error);
+          document.getElementById('statusMessage').textContent = `❌ Error: ${error.message}`;
+        });
+
     });
-});
   </script>
 
   <script async src="https://agent-1544a65fdc9fcf97a65a-zxey3.ondigitalocean.app/static/chatbot/widget.js" data-agent-id="09d762d1-e800-11ef-bf8f-4e013e2ddde4" data-chatbot-id="ega8768Bjflvus1G0gKhNxlh9gmHvmXl" data-name="PDF-Analyser Chatbot" data-primary-color="#031B4E" data-secondary-color="#E5E8ED" data-button-background-color="#0061EB" data-starting-message="Hello! How can I help you today?" data-logo="/static/chatbot/icons/default-agent.svg">
